@@ -20,18 +20,18 @@ from djitellopy import tello
 # tello init operation
 ##send_rc_control(left_right, forward_backward, up_down, yaw)
 me = tello.Tello()
-# me.connect()
-# print(me.get_battery())
-# me.streamon()
-# me.takeoff()
-# me.send_rc_control(0, 0, 15, 0)
+me.connect()
+print(me.get_battery())
+me.streamon()
+me.takeoff()
+me.send_rc_control(0, 0, 15, 0)
 
 # webcam init
 # cap = cv2.VideoCapture(0)
 
 # # 비디오 처리
 fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-out = cv2.VideoWriter('./video_save/output.avi', fourcc, 25.0, (800, 450))
+out = cv2.VideoWriter('./output5.avi', fourcc, 25.0, (800, 600))
 
 #defining prototext and caffemodel paths
 caffeModel = "./models/res10_300x300_ssd_iter_140000.caffemodel"
@@ -41,7 +41,7 @@ prototextPath = "./models/deploy.prototxt.txt"
 print("Loading model...................")
 net = cv2.dnn.readNetFromCaffe(prototextPath,caffeModel)
 
-vs = VideoStream(src=0).start()
+# vs = VideoStream(src=0).start()
 
 # def adjust_tello_position(offset_x, offset_y, offset_z):
 def adjust_tello_position(offset_x,  offset_z):
@@ -67,29 +67,29 @@ def adjust_tello_position(offset_x,  offset_z):
     #     elif offset_y > 0:
     #         drone.move_down(20)
 
-    if not 40000 <= offset_z <= 50000 and offset_z is not 0:
-        if offset_z < 40000:
+    if not 10000 <= offset_z <= 25000 and offset_z is not 0:
+        if offset_z < 10000:
             # me.move_forward(20)
             me.send_rc_control(0, 20, 0, 0)
-        elif offset_z > 50000:
+        elif offset_z > 25000:
             # me.move_back(20)
             me.send_rc_control(0, -20, 0, 0)
 
+
 # tello cam init
-# frame_read = me.get_frame_read()
+frame_read = me.get_frame_read()
 
 while True:
-    image = vs.read()
-    # image = frame_read.frame
-    image = imutils.resize(image, width=800)
+    # ret, image = cap.read()
+
+    image = frame_read.frame
+
+    # image = imutils.resize(image, width=800)
+    image = cv2.resize(image, (800, 600))
 
     # extract the dimensions , Resize image into 300x300 and converting image into blobFromImage
     (h,w) = image.shape[:2]
     print('h= ', h, 'w= ', w)
-
-    # # 비디오 처리
-    # fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    # out = cv2.VideoWriter('./video_save/output.avi', fourcc, 25.0, (w, h))
 
     # blobImage convert RGB (104.0, 177.0, 123.0)
     blob = cv2.dnn.blobFromImage(cv2.resize(image,(300,300)),1.0,(300,300),(104.0, 177.0, 123.0))
@@ -153,11 +153,10 @@ while True:
             # adjust_tello_position(offset_x, offset_y, z_area)
             adjust_tello_position(offset_x, zarea)
 
+    # show the output image
+    cv2.imshow("DIT AI Tello Drone", image)
     # 비디오 저장
     out.write(image)
-
-    # show the output image
-    cv2.imshow("Output", image)
 
     key = cv2.waitKey(1) & 0xFF
 
@@ -171,8 +170,8 @@ while True:
         me.send_rc_control(0, 0, 15, 0)
 
 # do a bit of cleanup
-out.write(image)
+# out.write(image)
 me.land()
 # frame_read.stopped
 cv2.destroyAllWindows()
-vs.stop()
+cv2.stop()
